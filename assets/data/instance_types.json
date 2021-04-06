@@ -1,0 +1,387 @@
+[
+    {
+        "vm_size": "t2.micro",
+        "memory": "1 GiB",
+        "vcpu": 1,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t2.nano",
+        "memory": "0.5 GiB",
+        "vcpu": 1,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t2.small",
+        "memory": "2 GiB",
+        "vcpu": 1,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t2.medium",
+        "memory": "4 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t2.large",
+        "memory": "8 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t2.xlarge",
+        "memory": "16 GiB",
+        "vcpu": 4,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t2.2xlarge",
+        "memory": "32 GiB",
+        "vcpu": 8,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "a1.medium",
+        "memory": "2 GiB",
+        "vcpu": 1,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "a1.large",
+        "memory": "4 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "a1.xlarge",
+        "memory": "8 GiB",
+        "vcpu": 4,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "a1.2xlarge",
+        "memory": "16 GiB",
+        "vcpu": 8,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "a1.4xlarge",
+        "memory": "32 GiB",
+        "vcpu": 16,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t3.nano",
+        "memory": "0.5 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t3.micro",
+        "memory": "1 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t3.small",
+        "memory": "2 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t3.medium",
+        "memory": "4 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t3.large",
+        "memory": "8 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t3.xlarge",
+        "memory": "16 GiB",
+        "vcpu": 4,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "t3.2xlarge",
+        "memory": "32 GiB",
+        "vcpu": 8,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m5.large",
+        "memory": "8 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m5.xlarge",
+        "memory": "16 GiB",
+        "vcpu": 4,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m5.2xlarge",
+        "memory": "32 GiB",
+        "vcpu": 8,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m5.4xlarge",
+        "memory": "64 GiB",
+        "vcpu": 16,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m5.12xlarge",
+        "memory": "192 GiB",
+        "vcpu": 48,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m5.24xlarge",
+        "memory": "384 GiB",
+        "vcpu": 96,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m5.metal",
+        "memory": "384 GiB",
+        "vcpu": 96,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m4.large",
+        "memory": "8 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m4.xlarge",
+        "memory": "16 GiB",
+        "vcpu": 4,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m4.2xlarge",
+        "memory": "32 GiB",
+        "vcpu": 8,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m4.4xlarge",
+        "memory": "64 GiB",
+        "vcpu": 16,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m4.10xlarge",
+        "memory": "160 GiB",
+        "vcpu": 40,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "m4.16xlarge",
+        "memory": "256 GiB",
+        "vcpu": 64,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c5.large",
+        "memory": "4 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c5.xlarge",
+        "memory": "8 GiB",
+        "vcpu": 4,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c5.2xlarge",
+        "memory": "16 GiB",
+        "vcpu": 8,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c5.4xlarge",
+        "memory": "32 GiB",
+        "vcpu": 16,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c5.9xlarge",
+        "memory": "72 GiB",
+        "vcpu": 36,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c5.18xlarge",
+        "memory": "144 GiB",
+        "vcpu": 72,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c4.large",
+        "memory": "3.75 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c4.xlarge",
+        "memory": "7.5 GiB",
+        "vcpu": 4,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c4.2xlarge",
+        "memory": "15 GiB",
+        "vcpu": 8,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c4.4xlarge",
+        "memory": "30 GiB",
+        "vcpu": 16,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "c4.8xlarge",
+        "memory": "60 GiB",
+        "vcpu": 36,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r5.large",
+        "memory": "16 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r5.xlarge",
+        "memory": "32 GiB",
+        "vcpu": 4,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r5.2xlarge",
+        "memory": "64 GiB",
+        "vcpu": 8,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r5.4xlarge",
+        "memory": "128 GiB",
+        "vcpu": 16,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r5.12xlarge",
+        "memory": "384 GiB",
+        "vcpu": 48,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r5.24xlarge",
+        "memory": "768 GiB",
+        "vcpu": 96,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r4.large",
+        "memory": "15.25 GiB",
+        "vcpu": 2,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r4.xlarge",
+        "memory": "30.5 GiB",
+        "vcpu": 4,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r4.2xlarge",
+        "memory": "61 GiB",
+        "vcpu": 8,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r4.4xlarge",
+        "memory": "122 GiB",
+        "vcpu": 16,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r4.8xlarge",
+        "memory": "244 GiB",
+        "vcpu": 32,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    },
+    {
+        "vm_size": "r4.16xlarge",
+        "memory": "488 GiB",
+        "vcpu": 64,
+        "region": "EU (Ireland)",
+        "value": "eu-west-1"
+    }
+]
