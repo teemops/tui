@@ -1,7 +1,7 @@
 <template>
 <div>
   <v-row justify="center" align="center">
-    <v-col cols="12" sm="8" md="6">
+    <v-col cols="auto">
       <v-card v-if="!dismiss">
         <v-card-title class="headline"> Welcome to the SCG </v-card-title>
         <v-card-text>
@@ -15,9 +15,12 @@
               <li>Select a resource you want to launch</li>
               <li>Choose the region</li>
               <li>Enter any required fields or optional ones</li>
-              <li>Launch into your AWS Account by clicking on the link or copying the cli command into your terminal</li>
+              <li>Launch into your AWS Account by clicking on the link or copying the cli command into your terminal*</li>
               <li>Download the source code for the template (optional)</li>
             </ol>
+          </p>
+          <p>
+            You'll need to create a subnet, security group and EC2 key pair before launching.
           </p>
         </v-card-text>
         <v-card-actions>
@@ -29,7 +32,7 @@
     </v-col>
   </v-row>
   <v-row justify="center" align="center">
-    <v-col cols="12" sm="8" md="6">
+    <v-col cols="auto">
         <generator id="test"></generator>
     </v-col>
   </v-row>
