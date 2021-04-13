@@ -1,0 +1,23 @@
+---
+
+# Deploy to S3 from Vue
+
+- name: Include the STS Assume Role
+  include: playbooks/inc.sts.yml
+
+- name: S3 build and deploy
+  hosts: localhost
+  become: false
+  connection: local
+  vars_files:
+    - vars/customers/{{ customer }}.yml
+    - vars/customers/vpc/{{ customer }}.yml
+    - vars/common/teemops.yml
+
+  roles:
+    # - { role: facts.certs, filter_value: "{{domain}}" }
+    # - { role: github.get-release, github_user: "teemops", github_repo: "teemops-ui", github_token_user: "kiwifellows"  }
+    - { role: s3.deploy, stack_name: "teemops-scg-app", template_url: "{{cfn_url}}{{templates.ui}}" }
+    # - { role: s3.create }
+    
+  

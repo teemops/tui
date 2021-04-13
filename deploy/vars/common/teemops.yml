@@ -1,0 +1,13 @@
+---
+
+cfn_url: https://s3-us-west-2.amazonaws.com/templates.teemops.com/
+templates:
+  root: iam.ec2.root.role.cfn.yaml
+  ui: teemops.ui.cfn.yaml
+  ec2: teemops-app/iam.ec2.service.role.cfn.yaml
+  cloudconfig: cloudconfig.create.cfn.yaml
+  cloudtrail: cloudtrail.create.cfn.yaml
+  
+
+
+

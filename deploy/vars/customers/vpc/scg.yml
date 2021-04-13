@@ -1,0 +1,80 @@
+---
+
+#VPC
+vpc:
+  name: "{{vpc_name}}"
+  cidr: 10.102.0.0/16
+  tags:
+    Name: "{{vpc_name}}"
+    Environment: "{{envname}}"
+    DeployedBy: teem
+
+#Route Tables - not required for dev environment
+
+#Subnets
+subnets:
+  privateA:
+    cidr: 10.102.1.0/24
+    az: a
+    public: false
+  privateB:
+    cidr: 10.102.2.0/24
+    az: b
+    public: false
+  publicA:
+    cidr: 10.102.3.0/24
+    az: a
+    public: true
+  publicB:
+    cidr: 10.102.4.0/24
+    az: b
+    public: true
+
+#Routes
+routes:
+  public:
+    name: PublicRoute
+    subnets:
+      - publicA
+      - publicB
+  private:
+    name: PrivateRoute
+    subnets:
+      - privateA
+      - privateB
+
+#Security Groups
+#IMPORTANT: Put in correct order alphabetically
+vpc_groups:
+  GroupA:
+    name: appFrontEnd
+    description: Front End Applications including ELB
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        cidr_ip: 0.0.0.0/0
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        cidr_ip: 0.0.0.0/0
+  GroupB:
+    name: appBackEnd
+    description: Back End Applications including EC2s
+    rules:
+      - proto: tcp
+        from_port: 80
+        to_port: 80
+        group_name: appFrontEnd
+      - proto: tcp
+        from_port: 443
+        to_port: 443
+        group_name: appFrontEnd
+  GroupC:
+    name: Database
+    description: MySQL Databases
+    rules:
+      - proto: tcp
+        ports:
+          - 3306
+        group_name: appBackEnd

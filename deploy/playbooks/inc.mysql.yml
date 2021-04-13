@@ -1,0 +1,20 @@
+---
+
+#Imports MySQL Script
+- name: Get EC2 Facts first
+  hosts: localhost
+  become: false
+  connection: local
+  vars_files:
+    - ../vars/customers/{{ customer }}.yml
+    - ../vars/customers/vpc/{{ customer }}.yml
+    - ../vars/common/aws.yml
+    - ../vars/common/teemops.yml
+    
+  pre_tasks:
+    - sts_assume_role:
+        role_arn: "{{role_arn}}"
+        role_session_name: "teemops_launch_job"
+        external_id: "{{aws_sts_externalid}}"
+        region: "{{region}}"
+      register: sts_role

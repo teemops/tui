@@ -1,0 +1,158 @@
+---
+
+project: scg
+git_branch: work
+envname: dev
+domain: app.teemops.com
+region: us-west-2
+aws_account_id: 231648734092
+aws_account_role: TeemOpsCloudApp
+role_arn: "arn:aws:iam::231648734092:role/TeemOpsCloudApp"
+aws_user_data: ""
+aws_sts_externalid: "cloudapi-1234"
+vpc_name: teemops-dev-oregon-1
+#EC2 KeyPair
+key_name: teemops-dev-oregon
+
+#AMI Configuration for Baking/Building AMI
+build_ami:
+  subnet_name: "publicA"
+  sg_name: "appBackEnd"
+  instance_type: t3.medium
+  pattern: "{{amis.ubuntu18.pattern}}"
+  owner: "{{amis.ubuntu18.account}}"
+
+#OS Packaging 
+##############
+# Node Version
+nodejs_version: "10.x"
+packages:
+  - git
+  - supervisor
+  - awscli
+  - python-pip
+  - python3-pip
+pip_packages:
+  - boto3
+  - PyMySQL
+
+#Code Deployment
+###############
+#Name of Code Deploy Environment
+app_name: TeemOpsApp
+repo_url: https://github.com/teemops/core-api.git
+
+#IAM Role and Instance Profile
+iam_cfn: files/iam/iam.mgmt.cfn.json
+
+mysql_admin_user: admin
+mysql_admin_pass: none #pass in as a parameter to deploy script/playbook
+
+#Name of EC2/ELB/ASG environment
+app_api:
+  endpoint: "{{project}}.{{domain}}"
+  assign_public_ip: true
+  root_folder: "/srv/app/"
+  ec2_instance_tags:
+    Name: "{{project}}.{{domain}}"
+    backup: weekly
+  ec2_volumes:
+    - device_name: /dev/sda1
+      device_type: gp2
+      volume_size: 30 #Must be at least 30Gb for Windows VOL Snapshots, 8GB for most Linux VOL Snapshots
+      delete_on_termination: true
+      tags:
+        Name: "{{project}}.{{domain}}"
+        drive: root
+        launched_by: teemops
+        backup: daily
+  asg: #Autoscaling group config
+    subnets:
+      - PrivateA
+      - PrivateB
+    sg_name: "appBackEnd"
+    instance_type: t2.micro
+    min: 1
+    max: 2
+
+#Name of RDS environment
+app_db:
+  name: "topsdev"
+  # user: "{{dbadmin}}"
+  # pass: "{{dbpass}}"
+  size: 20
+  type: db.t2.small
+  multi_az: false
+  subnet_name: private*
+    #  - privateA
+    #  - privateB
+  sg_name: Database
+  repo_url: https://github.com/teemops/teemops.git
+  path: schema/default.sql
+
+#Name of Status Service App
+status_service:
+  instance_type: t3.small
+  endpoint: "status-{{project}}.{{domain}}"
+  assign_public_ip: true
+  root_folder: "/srv/app/"
+  ec2_instance_tags:
+    Name: "status-{{project}}.{{domain}}"
+    backup: weekly
+  ec2_volumes:
+    - device_name: /dev/sda1
+      device_type: gp2
+      volume_size: 30 #Must be at least 30Gb for Windows VOL Snapshots, 8GB for most Linux VOL Snapshots
+      delete_on_termination: true
+      tags:
+        Name: "status-{{project}}.{{domain}}"
+        drive: root
+        launched_by: teemops
+        backup: daily
+  asg: #Autoscaling group config
+    subnets:
+      - PrivateA
+      - PrivateB
+    sg_name: "appBackEnd"
+    instance_type: t2.micro
+    min: 1
+    max: 1
+#Name of Pricing Service App
+pricing_service:
+  instance_type: t3.small
+  endpoint: "pricing-{{project}}.{{domain}}"
+  assign_public_ip: true
+  root_folder: "/srv/app/"
+  ec2_instance_tags:
+    Name: "pricing-{{project}}.{{domain}}"
+    backup: weekly
+  ec2_volumes:
+    - device_name: /dev/sda1
+      device_type: gp2
+      volume_size: 30 #Must be at least 30Gb for Windows VOL Snapshots, 8GB for most Linux VOL Snapshots
+      delete_on_termination: true
+      tags:
+        Name: "pricing-{{project}}.{{domain}}"
+        drive: root
+        launched_by: teemops
+        backup: daily
+  asg: #Autoscaling group config
+    subnets:
+      - PrivateA
+      - PrivateB
+    sg_name: "appBackEnd"
+    instance_type: t2.micro
+    min: 1
+    max: 1
+
+#Mail Server
+mail_server:
+  host: smtp.mailgun.org
+  user: app-dev@mail.teemops.com
+  pass: tops_dev_smtp_pass
+
+#SSL ARN
+ssl_arn: arn:aws:acm:us-east-1:231648734092:certificate/1d342295-4911-46df-add3-8d647f4d5a28
+
+
+

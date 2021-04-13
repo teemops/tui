@@ -1,0 +1,63 @@
+---
+
+- name: CFN S3 and CloudFront
+  cloudformation:
+    aws_access_key: "{{ sts_role.sts_creds.access_key }}"
+    aws_secret_key: "{{ sts_role.sts_creds.secret_key }}"
+    security_token: "{{ sts_role.sts_creds.session_token }}"
+    stack_name: "{{stack_name}}"
+    state: "present"
+    region: "us-east-1"
+    template_url: "{{template_url}}"
+    template_parameters:
+      HostedZone: "{{domain}}"
+      SSLArn: "{{ssl_arn}}"
+  register: s3cfn
+
+- debug: var=s3cfn
+  
+- set_fact:
+   bucket_name: "{{ s3cfn.stack_outputs.BucketName}}"
+    
+- debug: var=bucket_name
+
+# - name: download local copy of front end
+#   get_url:
+#     url: "{{github_release_file}}"
+#     dest: downloads/release.zip
+#     # mode: '0600'
+# - name: unzip folder
+#   unarchive: 
+#     src: "{{github_release_file}}"
+#     dest: downloads
+#     remote_src: yes
+#   register: zip_location
+
+# - debug: var=zip_location
+
+- name: s3 sync
+  s3_sync:
+    aws_access_key: "{{ sts_role.sts_creds.access_key }}"
+    aws_secret_key: "{{ sts_role.sts_creds.secret_key }}"
+    security_token: "{{ sts_role.sts_creds.session_token }}"
+    region: "{{region}}"
+    bucket: "{{bucket_name}}"
+    file_root: ../dist/
+    permission: public-read
+    cache_control: "public, max-age=31536000"
+    include: "*"
+
+- name: remove dist files after
+  file:
+    path: downloads/dist
+    state: absent
+
+- name: CloudFront Clear Cache
+  cloudfront_invalidation:
+    aws_access_key: "{{ sts_role.sts_creds.access_key }}"
+    aws_secret_key: "{{ sts_role.sts_creds.secret_key }}"
+    security_token: "{{ sts_role.sts_creds.session_token }}"
+    distribution_id: E1RX1JGNI1D2KF
+    caller_reference: teemopsdeploy
+    target_paths:
+      - /*

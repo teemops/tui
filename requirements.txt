@@ -1,0 +1,7 @@
+boto3
+awscli
+ansible
+boto
+github3.py
+requests
+autopep8
