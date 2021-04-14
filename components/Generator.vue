@@ -43,6 +43,7 @@
                   v-if="opt.type === 'boolean'"
                   :label="opt.description"
                   v-model="parameters[opt.name]"
+                  :value="0"
                 ></v-checkbox>
                 <v-text-field
                   v-if="opt.type === 'string'"
@@ -77,20 +78,26 @@
     </v-form>
     <v-divider></v-divider>
 
-    <v-card v-if="generate">
+    <v-card v-if="generate" width="800">
       <v-card-title class="headline"> Details </v-card-title>
       <v-card-text>
-        <p>
-          <a :href="templateUrl" target="_blank">Launch in CloudFormation</a>
-        </p>
-        <p>
-          <v-textarea
-            filled
-            name="cli"
-            label="AWS CLI Command"
-            :value="`aws ec2 run-instances --image-id ami-0ae908d55124839d9 --instance-type ${parameters.InstanceType.vm_size}`"
-          ></v-textarea>
-        </p>
+        <v-row>
+          <v-col cols="12" sm="8" md="10">
+            <p>
+              <a :href="templateUrl" target="_blank"
+                >Launch in CloudFormation</a
+              >
+            </p>
+            <p>
+              <v-textarea
+                filled
+                name="cli"
+                label="AWS CLI Command"
+                :value="cliCommand"
+              ></v-textarea>
+            </p>
+          </v-col>
+        </v-row>
       </v-card-text>
       <v-card-actions>
         <v-spacer />
@@ -124,7 +131,7 @@ export default Vue.extend({
       if (Object.keys(this.parameters).length > 0) {
         const baseUrl =
           'https://console.aws.amazon.com/cloudformation/home?region='
-        const teemopsTemplateUrl =
+        var teemopsTemplateUrl =
           'https%3A%2F%2Ftemplates.teemops.com.s3-us-west-2.amazonaws.com%2F'
         let globalParameters = this.parameters
         var paramString: string = ''
@@ -133,6 +140,15 @@ export default Vue.extend({
         })
 
         this.templateUrl = `${baseUrl}${this.cloud.region}#/stacks/quickcreate?templateUrl=${teemopsTemplateUrl}${this.cloud.resource}.cfn.yaml&stackName=teemops-${this.parameters.AppName}-stack${paramString}`
+        //now generate cli command
+        paramString = ''
+        Object.keys(this.parameters).forEach((key) => {
+          //if a list parameter type e.g. subnet list then
+          paramString += ` ParameterKey=${key},ParameterValue=${globalParameters[key]}`
+        })
+        teemopsTemplateUrl =
+          'https://templates.teemops.com.s3-us-west-2.amazonaws.com/'
+        this.cliCommand = `aws cloudformation create-stack  --capabilities CAPABILITY_IAM --stack-name teemops-${this.parameters.AppName}-stack --template-url ${teemopsTemplateUrl}${this.cloud.resource}.cfn.yaml --parameters${paramString}`
       } else {
         this.templateUrl = 'https://nourlyet'
       }
@@ -153,6 +169,11 @@ export default Vue.extend({
           data
         )
         this.parameters.AMI = result.amis.ami
+
+        if (this.cloud.resource == 'ec2') {
+          this.parameters.HasPublicIp = false
+          this.parameters.HasElasticIp = false
+        }
       } catch (e) {
         console.log('error with request to amis')
       }
@@ -202,12 +223,16 @@ export default Vue.extend({
       generate: false,
       formValid: false,
       templateUrl: '',
+      cliCommand: '',
       cloud: {
         resource: 'ec2',
         region: 'us-east-1',
         os: '',
       },
-      parameters: {} as any,
+      parameters: {
+        AppId: 0,
+        CustomerId: 0,
+      } as any,
       regions: (regions as Array<any>).sort(function (a, b) {
         return a.name - b.name
       }),
@@ -226,10 +251,10 @@ export default Vue.extend({
           name: 'asg',
           description: 'Launch Autoscaling Group',
         },
-        {
-          name: 'rds',
-          description: 'Launch RDS Database',
-        },
+        // {
+        //   name: 'rds',
+        //   description: 'Launch RDS Database',
+        // },
       ],
       options: [
         {
@@ -237,6 +262,7 @@ export default Vue.extend({
           description: 'Resource Name',
           resources: ['ec2', 'asg'],
           type: 'string',
+          default: 'My First App',
         },
         {
           name: 'KeyPair',
@@ -255,6 +281,7 @@ export default Vue.extend({
             (v: any) =>
               (v && v <= 4000) || 'EBS Volume Size between 30-4,000GB',
           ],
+          default: 50,
         },
         {
           name: 'InstanceType',
@@ -266,9 +293,10 @@ export default Vue.extend({
           }),
           textPath: 'vm_size',
           valuePath: 'vm_size',
+          default: 't2.nano',
         },
         {
-          name: 'Subnets',
+          name: 'Subnet',
           description: 'Subnets',
           resources: ['ec2', 'asg'],
           type: 'list',
@@ -285,19 +313,52 @@ export default Vue.extend({
           resources: ['ec2', 'asg'],
           description: 'Public IP Address?',
           type: 'boolean',
+          default: 1,
         },
         {
           name: 'HasElasticIp',
-          resources: ['ec2', 'asg'],
+          resources: ['ec2'],
           description: 'Use a Static(Elastic) IP?',
           type: 'boolean',
         },
         {
-          name: 'DatabaseName',
-          resources: ['rds'],
-          description: 'Database Name',
-          type: 'string',
+          name: 'AppEnvironment',
+          resources: ['asg'],
+          description: 'App Environment',
+          type: 'list',
+          values: ['baseline'],
+          default: 'baseline',
         },
+        {
+          name: 'Min',
+          resources: ['asg'],
+          description: 'Minimum number of EC2 Instances to Launch',
+          type: 'integer',
+          validation: [
+            (v: any) => !!v || 'This field is required',
+            (v: any) => (v && v >= 1) || 'Min must be between 1-10',
+            (v: any) => (v && v <= 10) || 'Min must be between 1-10',
+          ],
+          default: 1,
+        },
+        {
+          name: 'Max',
+          resources: ['asg'],
+          description: 'Minimum number of EC2 Instances to Launch',
+          type: 'integer',
+          validation: [
+            (v: any) => !!v || 'This field is required',
+            (v: any) => (v && v >= 1) || 'Max must be between 1-30',
+            (v: any) => (v && v <= 30) || 'Max must be between 1-30',
+          ],
+          default: 2,
+        },
+        // {
+        //   name: 'DatabaseName',
+        //   resources: ['rds'],
+        //   description: 'Database Name',
+        //   type: 'string',
+        // },
       ] as Array<any>,
     }
   },

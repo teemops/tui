@@ -10,8 +10,8 @@ export default {
 
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: '%s - tui',
-    title: 'tui',
+    titleTemplate: '%s - SCG',
+    title: 'Teemops SCG - AWS Simplified',
     htmlAttrs: {
       lang: 'en',
     },

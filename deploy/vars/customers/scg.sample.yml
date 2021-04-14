@@ -1,14 +1,13 @@
 ---
 
 project: scg
-#ignore
 git_branch: work
 envname: dev
-domain: app.mydomain.com
+domain: app.teemops.com
 region: us-west-2
-aws_account_id: 123456789101
+aws_account_id: 231648734092
 aws_account_role: TeemOpsCloudApp
-role_arn: "arn:aws:iam::123456789101:role/TeemOpsCloudApp"
+role_arn: "arn:aws:iam::231648734092:role/TeemOpsCloudApp"
 aws_user_data: ""
 aws_sts_externalid: "cloudapi-1234"
 vpc_name: teemops-dev-oregon-1
@@ -16,7 +15,7 @@ vpc_name: teemops-dev-oregon-1
 key_name: teemops-dev-oregon
 
 #SSL ARN
-ssl_arn: arn:aws:acm:us-east-1:123456789101:certificate/1b342295-4911-46df-add3-8d647f4d5a17
+ssl_arn: arn:aws:acm:us-east-1:231648734092:certificate/1d342295-4911-46df-add3-8d647f4d5a28
 
 
 
