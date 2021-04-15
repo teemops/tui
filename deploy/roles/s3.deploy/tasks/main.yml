@@ -52,12 +52,14 @@
     path: downloads/dist
     state: absent
 
+- debug: msg="{{ ansible_date_time.epoch }}"
+
 - name: CloudFront Clear Cache
   cloudfront_invalidation:
     aws_access_key: "{{ sts_role.sts_creds.access_key }}"
     aws_secret_key: "{{ sts_role.sts_creds.secret_key }}"
     security_token: "{{ sts_role.sts_creds.session_token }}"
     distribution_id: E1RX1JGNI1D2KF
-    caller_reference: teemopsdeploy
+    caller_reference: "{{ ansible_date_time.epoch }}"
     target_paths:
       - /*

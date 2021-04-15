@@ -6,7 +6,6 @@
   connection: local
   vars_files:
     - ../vars/customers/{{ customer }}.yml
-    - ../vars/customers/vpc/{{ customer }}.yml
     - ../vars/common/aws.yml
     - ../vars/common/teemops.yml
     
