@@ -1,9 +1,11 @@
+![Teemops GIF](https://raw.githubusercontent.com/teemops/assets/master/teemops-scg-gif.mp4.gif)
 # tui
 
 tui is short code for Teemops UI V2.
 
 The first UI for tui is SCG - Simple Cloud Generator
 Simple Cloud Generator can be run at https://app.teemops.com or by downloading the source and following the instructions below.
+
 
 ## Dev Build Setup
 
