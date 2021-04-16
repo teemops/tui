@@ -37,9 +37,15 @@ OR
 
 ## Install pre-requisites
 
+You will need a node environment to run.
+https://nodejs.org/en/
+
+## Install tui locally
+
 ```
 git clone https://github.com/teemops/tui.git
 cd tui
+npm install
 npm run dev
 
 ```
