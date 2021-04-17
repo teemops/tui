@@ -25,7 +25,7 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" v-on:click="dismiss=true"> Dismiss </v-btn>
+          <v-btn color="primary" v-on:click="dismissLocal"> Dismiss </v-btn>
         </v-card-actions>
       </v-card>
   
@@ -49,9 +49,19 @@ export default Vue.extend({
   components: {
     Generator
   },
+  methods: {
+    /**
+     * persist dismiss value
+     */
+    dismissLocal: async function(){
+      this.dismiss=1
+      localStorage.setItem('dismiss', '1');
+    }
+  },
   data(){
+    var dismiss=parseInt(localStorage.getItem('dismiss') || '0')
     return {
-      dismiss: false
+      dismiss: dismiss
     }
   },
   // methods: {

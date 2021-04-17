@@ -12,6 +12,7 @@
                 item-text="description"
                 item-value="name"
                 label="Select resource to launch"
+                v-on:change="updateDisplay"
               >
               </v-select>
 
@@ -43,7 +44,7 @@
                   v-if="opt.type === 'boolean'"
                   :label="opt.description"
                   v-model="parameters[opt.name]"
-                  :value="0"
+                  value="0"
                 ></v-checkbox>
                 <v-text-field
                   v-if="opt.type === 'string'"
@@ -148,7 +149,7 @@ export default Vue.extend({
         })
         teemopsTemplateUrl =
           'https://templates.teemops.com.s3-us-west-2.amazonaws.com/'
-        this.cliCommand = `aws cloudformation create-stack  --capabilities CAPABILITY_IAM --stack-name teemops-${this.parameters.AppName}-stack --template-url ${teemopsTemplateUrl}${this.cloud.resource}.cfn.yaml --parameters${paramString}`
+        this.cliCommand = `aws cloudformation create-stack --region ${this.cloud.region}  --capabilities CAPABILITY_IAM --stack-name teemops-${this.parameters.AppName}-stack --template-url ${teemopsTemplateUrl}${this.cloud.resource}.cfn.yaml --parameters${paramString}`
       } else {
         this.templateUrl = 'https://nourlyet'
       }
@@ -159,20 +160,29 @@ export default Vue.extend({
      */
     updateDisplay: async function () {
       try {
-        const data = {
-          region: this.cloud.region,
-          cloud_provider: 1,
-          app_provider: this.cloud.os,
-        }
-        const result = await this.$axios.$post(
-          'https://api.tcg.app.teemops.com/amis/view',
-          data
-        )
-        this.parameters.AMI = result.amis.ami
-
-        if (this.cloud.resource == 'ec2') {
+        if (
+          this.cloud.os != null &&
+          (this.cloud.resource == 'ec2' || this.cloud.resource == 'asg')
+        ) {
           this.parameters.HasPublicIp = false
-          this.parameters.HasElasticIp = false
+          if (this.cloud.resource == 'ec2') {
+            this.parameters.HasElasticIp = false
+          } else {
+            try {
+              delete this.parameters.HasElasticIp
+            } catch (e) {}
+          }
+
+          const data = {
+            region: this.cloud.region,
+            cloud_provider: 1,
+            app_provider: this.cloud.os,
+          }
+          const result = await this.$axios.$post(
+            'https://api.tcg.app.teemops.com/amis/view',
+            data
+          )
+          this.parameters.AMI = result.amis.ami
         }
       } catch (e) {
         console.log('error with request to amis')
@@ -191,32 +201,6 @@ export default Vue.extend({
 
       return currentOptions
     },
-    // templateUrl(): any {
-    //     if (Object.keys(this.parameters).length > 0) {
-    //       const baseUrl =
-    //         'https://console.aws.amazon.com/cloudformation/home?region='
-    //       const teemopsTemplateUrl =
-    //         'https%3A%2F%2Ftemplates.teemops.com.s3-us-west-2.amazonaws.com%2F'
-    //       let globalParameters = this.parameters
-    //       var paramString: string = ''
-    //       Object.keys(this.parameters).forEach((key) => {
-    //         paramString += `&param_${key}=${globalParameters[key]}`
-    //       })
-    //       return `${baseUrl}${this.cloud.region}#/stacks/quickcreate?templateUrl=${teemopsTemplateUrl}${this.cloud.resource}.cfn.yaml&stackName=teemops-${this.parameters.AppName}-stack${paramString}`
-    //     } else {
-    //       return 'https://nourlyet'
-    //     }
-    // },
-    // parameters(): any {
-    //   let currentResourceName = this.cloud.resource
-    //   var currentOptions = this.options.filter(function (value) {
-    //     return value.resources.indexOf(currentResourceName) > -1
-    //   })
-    //   var cloudDefaults = currentOptions.map(function (value) {
-    //     return { name: value.name, value: '' }
-    //   })
-    //   this.parameters = [...cloudDefaults]
-    // },
   },
   data() {
     return {
@@ -344,7 +328,7 @@ export default Vue.extend({
         {
           name: 'Max',
           resources: ['asg'],
-          description: 'Minimum number of EC2 Instances to Launch',
+          description: 'Maximum number of EC2 Instances to Launch',
           type: 'integer',
           validation: [
             (v: any) => !!v || 'This field is required',

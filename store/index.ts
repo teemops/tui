@@ -3,9 +3,7 @@ import User from '@/types/user'
 
 
 export const state = () => ({
-  user: {} as User,
-  name: 'Me',
-  options: {} as object
+  intro: true
 })
 
 export type RootState = ReturnType<typeof state>
