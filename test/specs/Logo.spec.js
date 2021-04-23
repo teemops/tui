@@ -1,8 +1,8 @@
 import test from 'ava'
 import { mount } from '@vue/test-utils'
-import Logo from '@/components/Logo.vue'
+import Generator from '@/components/Generator.vue'
 
-test('is a Vue instance', (t) => {
-  const wrapper = mount(Logo)
+test('is Generator a Vue instance', (t) => {
+  const wrapper = mount(Generator)
   t.truthy(wrapper.vm)
 })
