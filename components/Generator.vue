@@ -35,8 +35,12 @@
                 label="Select region to launch into"
                 v-on:change="updateDisplay"
               ></v-select>
+              <a target="_blank" :href="`${baseGH}${cloud.resource}.cfn.yaml`"
+                ><v-btn>View Template</v-btn></a
+              >
             </v-col>
           </v-row>
+
           <v-row>
             <v-col v-for="opt in formFields" cols="6">
               <div>
@@ -115,6 +119,7 @@
 <script lang="ts">
 import Vue, { PropOptions } from 'vue'
 import ResourceOption from '../types/ResourceOption'
+import ViewTemplate from '~/components/ViewTemplate.vue'
 
 const regions = require('~/assets/data/regions.json')
 const instanceTypes = require('~/assets/data/instance_types')
@@ -125,6 +130,9 @@ const SPACES_REGEX = /^\S*$/
 export default Vue.extend({
   props: {
     id: { type: String, required: true } as PropOptions<String>,
+  },
+  components: {
+    ViewTemplate,
   },
   async mounted() {
     try {
@@ -265,6 +273,8 @@ export default Vue.extend({
   },
   data() {
     return {
+      baseGH:
+        'https://github.com/teemops/templates/blob/master/cloudformation/',
       generate: false,
       formValid: false,
       templateUrl: '',
