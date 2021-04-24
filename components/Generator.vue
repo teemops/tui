@@ -1,6 +1,6 @@
 <template>
   <div>
-    <v-form v-if="!generate" v-model="formValid">
+    <v-form ref="form" v-if="!generate" v-model="formValid">
       <v-card>
         <v-card-title class="headline"> Launch an AWS Resource </v-card-title>
         <v-card-text>
@@ -12,6 +12,7 @@
                 item-text="description"
                 item-value="name"
                 label="Select resource to launch"
+                v-on:change="updateDisplay"
               >
               </v-select>
 
@@ -34,20 +35,24 @@
                 label="Select region to launch into"
                 v-on:change="updateDisplay"
               ></v-select>
+              <a target="_blank" :href="`${baseGH}${cloud.resource}.cfn.yaml`"
+                ><v-btn>View Template</v-btn></a
+              >
             </v-col>
           </v-row>
+
           <v-row>
-            <v-col v-for="opt in resourceOptions" cols="6">
+            <v-col v-for="opt in formFields" cols="6">
               <div>
                 <v-checkbox
                   v-if="opt.type === 'boolean'"
                   :label="opt.description"
                   v-model="parameters[opt.name]"
-                  :value="0"
                 ></v-checkbox>
                 <v-text-field
                   v-if="opt.type === 'string'"
                   :label="opt.description"
+                  :rules="opt.validation"
                   v-model="parameters[opt.name]"
                 ></v-text-field>
                 <v-text-field
@@ -70,7 +75,11 @@
         </v-card-text>
         <v-card-actions>
           <v-spacer />
-          <v-btn color="primary" v-on:click="generateTemplate">
+          <v-btn
+            color="primary"
+            :disabled="!formValid"
+            v-on:click="generateTemplate"
+          >
             Generate
           </v-btn>
         </v-card-actions>
@@ -109,11 +118,21 @@
 
 <script lang="ts">
 import Vue, { PropOptions } from 'vue'
+import ResourceOption from '../types/ResourceOption'
+import ViewTemplate from '~/components/ViewTemplate.vue'
+
 const regions = require('~/assets/data/regions.json')
 const instanceTypes = require('~/assets/data/instance_types')
+
+const NO_SPACES_REGEX = /^([A-z])*[^\s]\1*$/
+const SPACES_REGEX = /^\S*$/
+
 export default Vue.extend({
   props: {
     id: { type: String, required: true } as PropOptions<String>,
+  },
+  components: {
+    ViewTemplate,
   },
   async mounted() {
     try {
@@ -121,6 +140,7 @@ export default Vue.extend({
         'https://api.tcg.app.teemops.com/templates'
       )
       this.oses = result.templates
+      this.configureDefaults()
     } catch (e) {
       console.log('error with request to amis')
     }
@@ -129,26 +149,41 @@ export default Vue.extend({
     generateTemplate: function () {
       this.generate = true
       if (Object.keys(this.parameters).length > 0) {
+        const resourceOptions: Array<ResourceOption> = this.resourceOptions
+
         const baseUrl =
           'https://console.aws.amazon.com/cloudformation/home?region='
         var teemopsTemplateUrl =
           'https%3A%2F%2Ftemplates.teemops.com.s3-us-west-2.amazonaws.com%2F'
         let globalParameters = this.parameters
         var paramString: string = ''
+
         Object.keys(this.parameters).forEach((key) => {
-          paramString += `&param_${key}=${globalParameters[key]}`
+          //check if parameter is in resourceOptions array
+          if (
+            resourceOptions.find((option) => option.name == key) != undefined
+          ) {
+            paramString += `&param_${key}=${globalParameters[key]}`
+          }
         })
 
         this.templateUrl = `${baseUrl}${this.cloud.region}#/stacks/quickcreate?templateUrl=${teemopsTemplateUrl}${this.cloud.resource}.cfn.yaml&stackName=teemops-${this.parameters.AppName}-stack${paramString}`
         //now generate cli command
         paramString = ''
         Object.keys(this.parameters).forEach((key) => {
-          //if a list parameter type e.g. subnet list then
-          paramString += ` ParameterKey=${key},ParameterValue=${globalParameters[key]}`
+          if (
+            resourceOptions.find((option) => option.name == key) != undefined
+          ) {
+            if (!SPACES_REGEX.test(globalParameters[key])) {
+              paramString += ` ParameterKey=${key},ParameterValue=\\"'${globalParameters[key]}'\\"`
+            } else {
+              paramString += ` ParameterKey=${key},ParameterValue=\\"${globalParameters[key]}\\"`
+            }
+          }
         })
         teemopsTemplateUrl =
           'https://templates.teemops.com.s3-us-west-2.amazonaws.com/'
-        this.cliCommand = `aws cloudformation create-stack  --capabilities CAPABILITY_IAM --stack-name teemops-${this.parameters.AppName}-stack --template-url ${teemopsTemplateUrl}${this.cloud.resource}.cfn.yaml --parameters${paramString}`
+        this.cliCommand = `aws cloudformation create-stack --region ${this.cloud.region}  --capabilities CAPABILITY_IAM --stack-name teemops-${this.parameters.AppName}-stack --template-url ${teemopsTemplateUrl}${this.cloud.resource}.cfn.yaml --parameters${paramString}`
       } else {
         this.templateUrl = 'https://nourlyet'
       }
@@ -159,6 +194,39 @@ export default Vue.extend({
      */
     updateDisplay: async function () {
       try {
+        if (this.cloud.os != null) {
+          this.configureDefaults()
+          switch (this.cloud.resource) {
+            case 'dynamo':
+              break
+            default:
+              await this.configureEC2()
+          }
+        }
+      } catch (e) {
+        console.log('Error with updating display')
+      }
+    },
+    configureDefaults() {
+      var resourceOptions: Array<ResourceOption> = this.resourceOptions
+      resourceOptions.forEach((option: ResourceOption) => {
+        if (option.default && this.parameters[option.name] == null) {
+          this.parameters[option.name] = option.default
+        }
+      })
+    },
+    configureEC2: async function () {
+      this.parameters.HasPublicIp =
+        this.parameters.HasPublicIp == 1 ? true : false
+
+      if (this.cloud.resource == 'ec2') {
+        this.parameters.HasElasticIp = this.parameters.HasElasticIp || false
+      } else {
+        try {
+          delete this.parameters.HasElasticIp
+        } catch (e) {}
+      }
+      if (this.cloud.os != '') {
         const data = {
           region: this.cloud.region,
           cloud_provider: 1,
@@ -169,13 +237,6 @@ export default Vue.extend({
           data
         )
         this.parameters.AMI = result.amis.ami
-
-        if (this.cloud.resource == 'ec2') {
-          this.parameters.HasPublicIp = false
-          this.parameters.HasElasticIp = false
-        }
-      } catch (e) {
-        console.log('error with request to amis')
       }
     },
     showSection: async function (resourceName: any) {
@@ -183,43 +244,37 @@ export default Vue.extend({
     },
   },
   computed: {
+    /**
+     * Returns list of options for the given cloud.resource (e.g. ec2, asg, rds etc...)
+     */
     resourceOptions(): any {
       let currentResourceName = this.cloud.resource
-      var currentOptions = this.options.filter(function (value) {
-        return value.resources.indexOf(currentResourceName) > -1
+      var currentOptions = this.options.filter(function (option) {
+        return (
+          option.resources == undefined ||
+          option.resources.indexOf(currentResourceName) > -1
+        )
       })
 
       return currentOptions
     },
-    // templateUrl(): any {
-    //     if (Object.keys(this.parameters).length > 0) {
-    //       const baseUrl =
-    //         'https://console.aws.amazon.com/cloudformation/home?region='
-    //       const teemopsTemplateUrl =
-    //         'https%3A%2F%2Ftemplates.teemops.com.s3-us-west-2.amazonaws.com%2F'
-    //       let globalParameters = this.parameters
-    //       var paramString: string = ''
-    //       Object.keys(this.parameters).forEach((key) => {
-    //         paramString += `&param_${key}=${globalParameters[key]}`
-    //       })
-    //       return `${baseUrl}${this.cloud.region}#/stacks/quickcreate?templateUrl=${teemopsTemplateUrl}${this.cloud.resource}.cfn.yaml&stackName=teemops-${this.parameters.AppName}-stack${paramString}`
-    //     } else {
-    //       return 'https://nourlyet'
-    //     }
-    // },
-    // parameters(): any {
-    //   let currentResourceName = this.cloud.resource
-    //   var currentOptions = this.options.filter(function (value) {
-    //     return value.resources.indexOf(currentResourceName) > -1
-    //   })
-    //   var cloudDefaults = currentOptions.map(function (value) {
-    //     return { name: value.name, value: '' }
-    //   })
-    //   this.parameters = [...cloudDefaults]
-    // },
+    formFields(): any {
+      let currentResourceName = this.cloud.resource
+      var currentOptions = this.options.filter(function (option) {
+        return (
+          option.resources != undefined &&
+          option.type != 'placeholder' &&
+          option.resources.indexOf(currentResourceName) > -1
+        )
+      })
+
+      return currentOptions
+    },
   },
   data() {
     return {
+      baseGH:
+        'https://github.com/teemops/templates/blob/master/cloudformation/',
       generate: false,
       formValid: false,
       templateUrl: '',
@@ -251,6 +306,10 @@ export default Vue.extend({
           name: 'asg',
           description: 'Launch Autoscaling Group',
         },
+        {
+          name: 'asg.alb',
+          description: 'Launch ALB + Autoscaling Group',
+        },
         // {
         //   name: 'rds',
         //   description: 'Launch RDS Database',
@@ -258,21 +317,40 @@ export default Vue.extend({
       ],
       options: [
         {
+          name: 'AppId',
+          type: 'placeholder',
+        },
+        {
+          name: 'CustomerId',
+          type: 'placeholder',
+        },
+        {
+          name: 'AMI',
+          type: 'placeholder',
+          resources: ['ec2', 'asg', 'asg.alb'],
+        },
+        {
           name: 'AppName',
           description: 'Resource Name',
-          resources: ['ec2', 'asg'],
+          resources: ['ec2', 'asg', 'asg.alb'],
           type: 'string',
-          default: 'My First App',
-        },
+          default: 'myfirstapp',
+          validation: [
+            (v: any) => !!v || 'This field is required',
+            (v: any) =>
+              NO_SPACES_REGEX.test(v) || 'No spaces are allowed in name',
+          ],
+        } as ResourceOption,
         {
           name: 'KeyPair',
           description: 'Keypair Name',
-          resources: ['ec2', 'asg'],
+          resources: ['ec2', 'asg', 'asg.alb'],
           type: 'string',
+          blah: 'sdsd',
         },
         {
           name: 'RootVolumeSize',
-          resources: ['ec2', 'asg'],
+          resources: ['ec2', 'asg', 'asg.alb'],
           description: 'EBS Volume Size',
           type: 'integer',
           validation: [
@@ -285,7 +363,7 @@ export default Vue.extend({
         },
         {
           name: 'InstanceType',
-          resources: ['ec2', 'asg'],
+          resources: ['ec2', 'asg', 'asg.alb'],
           description: 'EC2 Instance Type',
           type: 'list',
           values: instanceTypes.map(function (value: any) {
@@ -298,22 +376,22 @@ export default Vue.extend({
         {
           name: 'Subnet',
           description: 'Subnets',
-          resources: ['ec2', 'asg'],
+          resources: ['ec2', 'asg', 'asg.alb'],
           type: 'list',
           values: [],
         },
         {
           name: 'SecurityGroup',
           description: 'Security Group',
-          resources: ['ec2', 'asg'],
+          resources: ['ec2', 'asg', 'asg.alb'],
           type: 'string',
         },
         {
           name: 'HasPublicIp',
-          resources: ['ec2', 'asg'],
+          resources: ['ec2', 'asg', 'asg.alb'],
           description: 'Public IP Address?',
           type: 'boolean',
-          default: 1,
+          default: true,
         },
         {
           name: 'HasElasticIp',
@@ -323,7 +401,7 @@ export default Vue.extend({
         },
         {
           name: 'AppEnvironment',
-          resources: ['asg'],
+          resources: ['asg', 'asg.alb'],
           description: 'App Environment',
           type: 'list',
           values: ['baseline'],
@@ -344,7 +422,7 @@ export default Vue.extend({
         {
           name: 'Max',
           resources: ['asg'],
-          description: 'Minimum number of EC2 Instances to Launch',
+          description: 'Maximum number of EC2 Instances to Launch',
           type: 'integer',
           validation: [
             (v: any) => !!v || 'This field is required',
@@ -353,13 +431,27 @@ export default Vue.extend({
           ],
           default: 2,
         },
-        // {
-        //   name: 'DatabaseName',
-        //   resources: ['rds'],
-        //   description: 'Database Name',
-        //   type: 'string',
-        // },
-      ] as Array<any>,
+        {
+          name: 'VPC',
+          resources: ['asg.alb'],
+          description: 'VPC to launch in',
+          type: 'list',
+          values: [],
+        },
+        {
+          name: 'ALBSubnets',
+          resources: ['asg.alb'],
+          description: 'ALB Subnets',
+          type: 'list',
+          values: [],
+        },
+        {
+          name: 'SSLArn',
+          resources: ['asg.alb'],
+          description: 'SSL ARN',
+          type: 'string',
+        },
+      ] as Array<ResourceOption>,
     }
   },
 })

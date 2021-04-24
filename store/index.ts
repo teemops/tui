@@ -1,21 +1,19 @@
 import { GetterTree, ActionTree, MutationTree } from 'vuex'
 import User from '@/types/user'
-
+import ResourceOption from '@/types/ResourceOption';
 
 export const state = () => ({
-  user: {} as User,
-  name: 'Me',
-  options: {} as object
+  intro: true as boolean
 })
 
 export type RootState = ReturnType<typeof state>
 
 export const getters: GetterTree<RootState, RootState> = {
-  name: (state) => state.name,
+  intro: (state) => state.intro,
 }
 
 export const mutations: MutationTree<RootState> = {
-  CHANGE_NAME: (state, newName: string) => (state.name = newName),
+  HIDE_INTRO: (state, status: boolean) => (state.intro = status),
 }
 
 /**
