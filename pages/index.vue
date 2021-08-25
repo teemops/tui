@@ -33,7 +33,7 @@
   </v-row>
   <v-row justify="center" align="center">
     <v-col cols="auto">
-        <generator id="test"></generator>
+        <generator id="main-generator"></generator>
     </v-col>
   </v-row>
 </div>
@@ -45,23 +45,24 @@ import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import Generator from '~/components/Generator.vue'
 
 export default Vue.extend({
+  name: 'home',
   layout: 'simple',
   components: {
-    Generator
+    Generator,
   },
   methods: {
     /**
      * persist dismiss value
      */
-    dismissLocal: async function(){
-      this.dismiss=1
-      localStorage.setItem('dismiss', '1');
-    }
+    dismissLocal: async function () {
+      this.dismiss = 1
+      localStorage.setItem('dismiss', '1')
+    },
   },
-  data(){
-    var dismiss=parseInt(localStorage.getItem('dismiss') || '0')
+  data() {
+    var dismiss = parseInt(localStorage.getItem('dismiss') || '0')
     return {
-      dismiss: dismiss
+      dismiss: dismiss,
     }
   },
   // methods: {

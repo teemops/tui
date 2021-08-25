@@ -44,11 +44,15 @@ export default {
   modules: [
     // https://go.nuxtjs.dev/axios
     '@nuxtjs/axios',
+    ['nuxt-vuex-localstorage', {
+      mode: 'debug',
+      localStorage: ['auth']
+    }]
   ],
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
-    baseURL: process.env.API_ENDPOINT || 'http://localhost:8080/beta/',
+    baseURL: process.env.API_ENDPOINT || 'https://api.teemops.com/api/'
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify

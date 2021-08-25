@@ -1,7 +1,10 @@
 export default interface User {
+  userid: number
   email: string
   username: string | null
-  password: string
-  First: string | null
-  Last: string | null
+  first: string | null
+  last: string | null
+  timestamp: number
+  uniqueId: string
+  cloudProviders: Array<any>
 }

@@ -1,8 +1,42 @@
 <template>
   <div>
-    <v-form ref="form" v-if="!generate" v-model="formValid">
+    <v-card loading="true" v-if="show == 'loading'" width="800">
+      <template slot="progress">
+        <v-progress-linear
+          color="primary"
+          height="10"
+          indeterminate
+        ></v-progress-linear>
+      </template>
+      <v-card-text>
+        <v-row>
+          <v-col cols="12" sm="8" md="10">
+            <p>Loading cloud platform...</p>
+          </v-col>
+        </v-row>
+      </v-card-text>
+    </v-card>
+
+    <v-form ref="form" v-if="show == 'start'" v-model="formValid">
       <v-card>
-        <v-card-title class="headline"> Launch an AWS Resource </v-card-title>
+        <v-card-title class="headline">
+          Launch an AWS Resource <v-spacer />
+
+          <div v-if="hasCredentials">
+            <v-select
+              v-model="cloud.accountid"
+              :items="credentials"
+              item-text="aws_account_id"
+              item-value="user_cloud_provider_id"
+              label="AWS Account"
+            ></v-select>
+          </div>
+          <div v-else>
+            <v-btn color="primary" v-on:click="connectAWSAccount"
+              >Connect AWS Account</v-btn
+            >
+          </div>
+        </v-card-title>
         <v-card-text>
           <v-row>
             <v-col cols="6" sm="4" md="6">
@@ -35,6 +69,7 @@
                 label="Select region to launch into"
                 v-on:change="updateDisplay"
               ></v-select>
+
               <a target="_blank" :href="`${baseGH}${cloud.resource}.cfn.yaml`"
                 ><v-btn>View Template</v-btn></a
               >
@@ -87,7 +122,7 @@
     </v-form>
     <v-divider></v-divider>
 
-    <v-card v-if="generate" width="800">
+    <v-card v-if="show == 'generate'" width="800">
       <v-card-title class="headline"> Details </v-card-title>
       <v-card-text>
         <v-row>
@@ -113,13 +148,23 @@
         <v-btn color="primary" v-on:click="generate = false"> Edit </v-btn>
       </v-card-actions>
     </v-card>
+
+    <connect-account v-if="show == 'connect'" v-on:cancelMe="show = 'start'" />
   </div>
 </template>
 
 <script lang="ts">
 import Vue, { PropOptions } from 'vue'
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import ResourceOption from '../types/ResourceOption'
 import ViewTemplate from '~/components/ViewTemplate.vue'
+import ConnectAccount from '~/components/Account/ConnectAccount.vue'
+const showOptions = {
+  loading: 'loading',
+  start: 'start',
+  generate: 'generate',
+  connect: 'connect',
+}
 
 const regions = require('~/assets/data/regions.json')
 const instanceTypes = require('~/assets/data/instance_types')
@@ -133,9 +178,27 @@ export default Vue.extend({
   },
   components: {
     ViewTemplate,
+    ConnectAccount,
   },
   async mounted() {
     try {
+      //check if user has loggedin and been here (e.g. in this browser before)
+      if (this.beenHere) {
+        //first check if we can access account details
+        const check = await this.getUser()
+        if (check) {
+          await this.topsCredentials({ token: this.token })
+          if (this.credentials.length > 0) {
+            this.cloud.accountid = this.credentials[0].user_cloud_provider_id
+          }
+
+          this.show = showOptions.start
+        } else {
+          this.show = showOptions.start
+          this.$router.push('/login')
+        }
+      }
+
       const result = await this.$axios.$get(
         'https://api.tcg.app.teemops.com/templates'
       )
@@ -146,6 +209,17 @@ export default Vue.extend({
     }
   },
   methods: {
+    ...mapActions({ getUser: 'auth/getUser' }),
+    ...mapActions({ topsGet: 'teemops/get' }),
+    ...mapActions({ topsPost: 'teemops/post' }),
+    ...mapActions({ topsCredentials: 'teemops/credentials' }),
+    connectAWSAccount: async function () {
+      this.show = showOptions.connect
+    },
+    dismissConnectLocal: async function () {
+      this.dismissConnect = 1
+      localStorage.setItem('dismissConnect', '1')
+    },
     generateTemplate: function () {
       this.generate = true
       if (Object.keys(this.parameters).length > 0) {
@@ -244,6 +318,16 @@ export default Vue.extend({
     },
   },
   computed: {
+    ...mapGetters({ token: 'auth/token' }),
+    ...mapGetters({ credentials: 'teemops/credentials' }),
+    ...mapGetters({ beenHere: 'auth/beenHere' }),
+    hasCredentials(): any {
+      if (this.credentials.length > 0) {
+        return true
+      } else {
+        return false
+      }
+    },
     /**
      * Returns list of options for the given cloud.resource (e.g. ec2, asg, rds etc...)
      */
@@ -268,11 +352,42 @@ export default Vue.extend({
         )
       })
 
+      currentOptions.forEach(async (option: any, index) => {
+        if (option['dynamic'] != undefined) {
+          try {
+            console.log(this.cloud.region)
+            const params = {
+              ...option['dynamic'],
+              awsAccountId: this.cloud.accountid,
+              params: {},
+              region: this.cloud.region,
+            }
+            const response = await this.topsPost({
+              path: 'apps/general',
+              data: params,
+              token: this.token,
+            })
+            console.log(JSON.stringify(response))
+            if (
+              response.data.Vpcs != undefined &&
+              response.data.Vpcs.length > 0
+            ) {
+              option['values'] = response.data.Vpcs
+            }
+          } catch (e) {
+            console.log(e)
+          }
+        }
+      })
       return currentOptions
     },
   },
   data() {
+    var dismissConnect = parseInt(localStorage.getItem('dismissConnect') || '0')
+
     return {
+      show: showOptions.loading,
+      dismissConnect: dismissConnect,
       baseGH:
         'https://github.com/teemops/templates/blob/master/cloudformation/',
       generate: false,
@@ -283,6 +398,7 @@ export default Vue.extend({
         resource: 'ec2',
         region: 'us-east-1',
         os: '',
+        accountid: null,
       },
       parameters: {
         AppId: 0,
@@ -437,6 +553,12 @@ export default Vue.extend({
           description: 'VPC to launch in',
           type: 'list',
           values: [],
+          dynamic: {
+            className: 'EC2',
+            task: 'describeVpcs',
+          },
+          textPath: 'VpcId',
+          valuePath: 'VpcId',
         },
         {
           name: 'ALBSubnets',

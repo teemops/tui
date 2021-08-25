@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nuxt",
+    "dev": "API_ENDPOINT=http://localhost:8080/api/ nuxt",
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
@@ -17,9 +17,12 @@
     "@nuxtjs/axios": "^5.13.1",
     "@nuxtjs/dotenv": "^1.4.1",
     "@vue/composition-api": "^1.0.0-rc.6",
+    "aws-sdk": "^2.893.0",
     "core-js": "^3.9.1",
+    "jose": "^3.14.4",
     "nuxt": "^2.15.3",
-    "nuxt-property-decorator": "^2.9.1"
+    "nuxt-property-decorator": "^2.9.1",
+    "nuxt-vuex-localstorage": "^1.3.0"
   },
   "devDependencies": {
     "@ava/babel": "^1.0.1",
