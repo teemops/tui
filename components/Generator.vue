@@ -68,7 +68,13 @@
                 item-value="id"
                 label="Select region to launch into"
                 v-on:change="updateDisplay"
-              ></v-select>
+              >
+                <template slot="item" slot-scope="data">
+                  <!-- HTML that describes how select should render items when the select is open -->
+
+                  {{ data.item.name }} - {{ data.item.description }}
+                </template>
+              </v-select>
 
               <a target="_blank" :href="`${baseGH}${cloud.resource}.cfn.yaml`"
                 ><v-btn>View Template</v-btn></a
@@ -96,14 +102,37 @@
                   :rules="opt.validation"
                   v-model="parameters[opt.name]"
                 ></v-text-field>
-                <v-combobox
+                <v-select
                   v-if="opt.type === 'list'"
                   :label="opt.description"
                   :items="opt.values"
                   :item-text="opt.textPath"
                   :item-value="opt.valuePath"
                   v-model="parameters[opt.name]"
-                ></v-combobox>
+                  :multiple="opt.multiple ? opt.multiple : false"
+                >
+                  <template slot="selection" slot-scope="data">
+                    <!-- HTML that describe how select should render selected items -->
+
+                    {{
+                      data.item.name
+                        ? `${data.item.name} - ${data.item.id}`
+                        : data.item.id
+                        ? data.item.id
+                        : data.item
+                    }}
+                  </template>
+                  <template slot="item" slot-scope="data">
+                    <!-- HTML that describe how select should render items when the select is open -->
+                    {{
+                      data.item.name
+                        ? `${data.item.name} - ${data.item.id}`
+                        : data.item.id
+                        ? data.item.id
+                        : data.item
+                    }}
+                  </template>
+                </v-select>
               </div>
             </v-col>
           </v-row>
@@ -222,6 +251,7 @@ export default Vue.extend({
     },
     generateTemplate: function () {
       this.generate = true
+      this.show = showOptions.generate
       if (Object.keys(this.parameters).length > 0) {
         const resourceOptions: Array<ResourceOption> = this.resourceOptions
 
@@ -356,11 +386,22 @@ export default Vue.extend({
         if (option['dynamic'] != undefined) {
           try {
             console.log(this.cloud.region)
+            //e.g. tihs will equal name of return data from AWS APIs e.g. Subnets
+            const itemIdentifier = option['dynamic']['items']
+            //id is used to identify the fieldname that will become the id
+            const idIdentifier = option['dynamic']['id']
+            //name is used to identify whether or not to use Tags 'tags' or
+            //use the named field as the name
+            const nameIdentifier =
+              option['textPath'] == 'tags'
+                ? `Tags[?Key=='Name'].Value[] | [0]`
+                : option['textPath']
             const params = {
               ...option['dynamic'],
               awsAccountId: this.cloud.accountid,
               params: {},
               region: this.cloud.region,
+              filter: `${itemIdentifier}[*].{name: ${nameIdentifier}, id: ${idIdentifier}}`,
             }
             const response = await this.topsPost({
               path: 'apps/general',
@@ -368,11 +409,8 @@ export default Vue.extend({
               token: this.token,
             })
             console.log(JSON.stringify(response))
-            if (
-              response.data.Vpcs != undefined &&
-              response.data.Vpcs.length > 0
-            ) {
-              option['values'] = response.data.Vpcs
+            if (response.data != undefined && response.data.length > 0) {
+              option['values'] = response.data
             }
           } catch (e) {
             console.log(e)
@@ -461,8 +499,16 @@ export default Vue.extend({
           name: 'KeyPair',
           description: 'Keypair Name',
           resources: ['ec2', 'asg', 'asg.alb'],
-          type: 'string',
-          blah: 'sdsd',
+          type: 'list',
+          values: [],
+          dynamic: {
+            className: 'EC2',
+            task: 'describeKeyPairs',
+            items: 'KeyPairs',
+            id: 'KeyName',
+          },
+          textPath: 'KeyName',
+          valuePath: 'id',
         },
         {
           name: 'RootVolumeSize',
@@ -494,13 +540,31 @@ export default Vue.extend({
           description: 'Subnets',
           resources: ['ec2', 'asg', 'asg.alb'],
           type: 'list',
+          multiple: true,
           values: [],
+          dynamic: {
+            className: 'EC2',
+            task: 'describeSubnets',
+            items: 'Subnets',
+            id: 'SubnetId',
+          },
+          textPath: 'tags',
+          valuePath: 'id',
         },
         {
           name: 'SecurityGroup',
           description: 'Security Group',
           resources: ['ec2', 'asg', 'asg.alb'],
-          type: 'string',
+          type: 'list',
+          values: [],
+          dynamic: {
+            className: 'EC2',
+            task: 'describeSecurityGroups',
+            items: 'SecurityGroups',
+            id: 'GroupId',
+          },
+          textPath: 'GroupName',
+          valuePath: 'id',
         },
         {
           name: 'HasPublicIp',
@@ -555,17 +619,28 @@ export default Vue.extend({
           values: [],
           dynamic: {
             className: 'EC2',
-            task: 'describeVpcs',
+            task: 'Vpcs',
+            items: 'Vpcs',
+            id: 'VpcId',
           },
-          textPath: 'VpcId',
-          valuePath: 'VpcId',
+          textPath: 'tags',
+          valuePath: 'id',
         },
         {
           name: 'ALBSubnets',
           resources: ['asg.alb'],
           description: 'ALB Subnets',
           type: 'list',
+          multiple: true,
           values: [],
+          dynamic: {
+            className: 'EC2',
+            task: 'describeSubnets',
+            items: 'Subnets',
+            id: 'SubnetId',
+          },
+          textPath: 'tags',
+          valuePath: 'id',
         },
         {
           name: 'SSLArn',
