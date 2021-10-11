@@ -42,6 +42,7 @@
           </v-row>
         </v-card-text>
         <v-card-actions>
+          <nuxt-link to="/">Cancel</nuxt-link>
           <v-spacer />
           <v-btn
             v-if="showPass && !accountExists"

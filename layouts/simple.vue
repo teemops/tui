@@ -3,23 +3,10 @@
     <v-app-bar fixed app>
       <img src="~/assets/TeemLogo1ps-small.png" height="40px" />
 
-      <v-spacer /><a
-        target="_blank"
-        style="color: #fff; text-decoration: none"
-        href="https://forms.gle/Wc59rcKi2RPXfqTw6"
-      >
-        <v-btn class="secondary">GIVE Feedback</v-btn></a
-      >
       <v-spacer />
-
-      <iframe
-        src="https://ghbtns.com/github-btn.html?user=teemops&repo=tui&type=star&count=true&size=large"
-        frameborder="0"
-        scrolling="0"
-        width="170"
-        height="30"
-        title="GitHub"
-      ></iframe>
+      <b>Teem Ops - Simple Cloud Generator</b>
+      <v-spacer />
+      <nuxt-link to="login"> <v-btn class="info">Login</v-btn></nuxt-link>
     </v-app-bar>
     <v-main>
       <v-container>
@@ -38,7 +25,7 @@
             style="text-decoration: none"
             href="https://forms.gle/Wc59rcKi2RPXfqTw6"
           >
-            <v-btn class="white">GIVE Feedback</v-btn></a
+            <v-btn class="white">Feedback</v-btn></a
           >
         </v-card-text>
       </v-card>

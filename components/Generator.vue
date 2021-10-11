@@ -133,6 +133,15 @@
                     }}
                   </template>
                 </v-select>
+                <span v-if="opt.tooltip != undefined">
+                  <a
+                    target="_blank"
+                    :href="`https://console.aws.amazon.com${opt.tooltip.link(
+                      cloud.region
+                    )}`"
+                    >{{ opt.tooltip.text }}</a
+                  >
+                </span>
               </div>
             </v-col>
           </v-row>
@@ -174,7 +183,7 @@
       </v-card-text>
       <v-card-actions>
         <v-spacer />
-        <v-btn color="primary" v-on:click="generate = false"> Edit </v-btn>
+        <v-btn color="primary" v-on:click="show = 'start'"> Edit </v-btn>
       </v-card-actions>
     </v-card>
 
@@ -236,6 +245,7 @@ export default Vue.extend({
     } catch (e) {
       console.log('error with request to amis')
     }
+    this.show = showOptions.start
   },
   methods: {
     ...mapActions({ getUser: 'auth/getUser' }),
@@ -396,10 +406,14 @@ export default Vue.extend({
               option['textPath'] == 'tags'
                 ? `Tags[?Key=='Name'].Value[] | [0]`
                 : option['textPath']
+            const filterParams =
+              option['dynamic']['params'] != undefined
+                ? option['dynamic']['params']
+                : {}
             const params = {
               ...option['dynamic'],
               awsAccountId: this.cloud.accountid,
-              params: {},
+              params: filterParams,
               region: this.cloud.region,
               filter: `${itemIdentifier}[*].{name: ${nameIdentifier}, id: ${idIdentifier}}`,
             }
@@ -497,6 +511,12 @@ export default Vue.extend({
         } as ResourceOption,
         {
           name: 'KeyPair',
+          tooltip: {
+            text: 'Create a new KeyPair',
+            link: function (region: string) {
+              return `/ec2/v2/home?region=${region}#KeyPairs:`
+            },
+          },
           description: 'Keypair Name',
           resources: ['ec2', 'asg', 'asg.alb'],
           type: 'list',
@@ -537,6 +557,12 @@ export default Vue.extend({
         },
         {
           name: 'Subnet',
+          tooltip: {
+            text: 'Create a new Subnet',
+            link: function (region: string) {
+              return `/vpc/home?region=${region}#subnets:`
+            },
+          },
           description: 'Subnets',
           resources: ['ec2', 'asg', 'asg.alb'],
           type: 'list',
@@ -553,6 +579,12 @@ export default Vue.extend({
         },
         {
           name: 'SecurityGroup',
+          tooltip: {
+            text: 'Create a new Security Group',
+            link: function (region: string) {
+              return `/ec2/v2/home?region=${region}#SecurityGroups:`
+            },
+          },
           description: 'Security Group',
           resources: ['ec2', 'asg', 'asg.alb'],
           type: 'list',
@@ -613,13 +645,19 @@ export default Vue.extend({
         },
         {
           name: 'VPC',
+          tooltip: {
+            text: 'Manage VPCs',
+            link: function (region: string) {
+              return `/vpc/home?region=${region}#vpcs:`
+            },
+          },
           resources: ['asg.alb'],
           description: 'VPC to launch in',
           type: 'list',
           values: [],
           dynamic: {
             className: 'EC2',
-            task: 'Vpcs',
+            task: 'describeVpcs',
             items: 'Vpcs',
             id: 'VpcId',
           },
@@ -628,6 +666,12 @@ export default Vue.extend({
         },
         {
           name: 'ALBSubnets',
+          tooltip: {
+            text: 'Create a new Subnet',
+            link: function (region: string) {
+              return `/vpc/home?region=${region}#subnets:`
+            },
+          },
           resources: ['asg.alb'],
           description: 'ALB Subnets',
           type: 'list',
@@ -644,9 +688,26 @@ export default Vue.extend({
         },
         {
           name: 'SSLArn',
+          tooltip: {
+            text: 'Create a new SSL Certificate',
+            link: function (region: string) {
+              return `/acm/home?region=${region}#/`
+            },
+          },
           resources: ['asg.alb'],
           description: 'SSL ARN',
-          type: 'string',
+          type: 'list',
+          dynamic: {
+            className: 'ACM',
+            task: 'listCertificates',
+            items: 'CertificateSummaryList',
+            id: 'CertificateArn',
+            params: {
+              CertificateStatuses: ['ISSUED'],
+            },
+          },
+          textPath: 'DomainName',
+          valuePath: 'id',
         },
       ] as Array<ResourceOption>,
     }
