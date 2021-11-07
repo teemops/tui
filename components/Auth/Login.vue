@@ -42,7 +42,7 @@
           </v-row>
         </v-card-text>
         <v-card-actions>
-          <nuxt-link to="/">Cancel</nuxt-link>
+          <a v-on:click="clearUser">Cancel</a>
           <v-spacer />
           <v-btn
             v-if="showPass && !accountExists"
@@ -130,6 +130,7 @@ export default Vue.extend({
     ...mapActions({ verifyUser: 'auth/verify' }),
     ...mapActions({ generate: 'auth/generate' }),
     ...mapActions({ getUser: 'auth/getUser' }),
+    ...mapActions({ clearUser: 'auth/clear' }),
     loginMe: async function () {
       this.waiting = true
       try {

@@ -1,91 +1,76 @@
 <template>
   <v-app dark>
-    <v-navigation-drawer
-      v-model="drawer"
-      :mini-variant="miniVariant"
-      :clipped="clipped"
-      fixed
-      app
-    >
-      <v-list>
-        <v-list-item
-          v-for="(item, i) in items"
-          :key="i"
-          :to="item.to"
-          router
-          exact
-        >
-          <v-list-item-action>
-            <v-icon>{{ item.icon }}</v-icon>
-          </v-list-item-action>
-          <v-list-item-content>
-            <v-list-item-title v-text="item.title" />
-          </v-list-item-content>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-    <v-app-bar :clipped-left="clipped" fixed app>
-      <v-app-bar-nav-icon @click.stop="drawer = !drawer" />
-      <v-btn icon @click.stop="miniVariant = !miniVariant">
-        <v-icon>mdi-{{ `chevron-${miniVariant ? 'right' : 'left'}` }}</v-icon>
-      </v-btn>
-      <v-btn icon @click.stop="clipped = !clipped">
-        <v-icon>mdi-application</v-icon>
-      </v-btn>
-      <v-btn icon @click.stop="fixed = !fixed">
-        <v-icon>mdi-minus</v-icon>
-      </v-btn>
-      <v-toolbar-title v-text="title" />
+    <v-app-bar fixed app>
+      <img src="~/assets/TeemLogo1ps-small.png" height="40px" />
+
       <v-spacer />
-      <v-btn icon @click.stop="rightDrawer = !rightDrawer">
-        <v-icon>mdi-menu</v-icon>
-      </v-btn>
+      <b>Teem Ops</b>
+      <v-spacer />
+      <account-menu :status="status"></account-menu>
     </v-app-bar>
     <v-main>
       <v-container>
         <nuxt />
       </v-container>
     </v-main>
-    <v-navigation-drawer v-model="rightDrawer" :right="right" temporary fixed>
-      <v-list>
-        <v-list-item @click.native="right = !right">
-          <v-list-item-action>
-            <v-icon light> mdi-repeat </v-icon>
-          </v-list-item-action>
-          <v-list-item-title>Switch drawer (click me)</v-list-item-title>
-        </v-list-item>
-      </v-list>
-    </v-navigation-drawer>
-    <v-footer :absolute="!fixed" app>
-      <span>&copy; {{ new Date().getFullYear() }}</span>
+    <v-footer :padless="true">
+      <v-card flat tile width="100%" class="secondary lighten-1 text-center">
+        <v-card-text class="white--text">
+          <strong>Teemops &copy; Copyright</strong>
+          {{ new Date().getFullYear() }}
+          &nbsp;
+          <a
+            target="_blank"
+            class="secondary"
+            style="text-decoration: none"
+            href="https://forms.gle/Wc59rcKi2RPXfqTw6"
+          >
+            <v-btn class="white">Feedback</v-btn></a
+          >
+        </v-card-text>
+      </v-card>
     </v-footer>
   </v-app>
 </template>
 
-<script>
-export default {
-  data() {
-    return {
-      clipped: false,
-      drawer: false,
-      fixed: false,
-      items: [
-        {
-          icon: 'mdi-apps',
-          title: 'Welcome',
-          to: '/',
-        },
-        {
-          icon: 'mdi-chart-bubble',
-          title: 'Inspire',
-          to: '/inspire',
-        },
-      ],
-      miniVariant: false,
-      right: true,
-      rightDrawer: false,
-      title: 'Teemops',
+<script lang="ts">
+import Vue from 'vue'
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+import AccountMenu from '../components/Account/AccountMenu.vue'
+
+export default Vue.extend({
+  components: {
+    AccountMenu,
+  },
+  computed: {
+    ...mapGetters({ token: 'auth/token' }),
+    ...mapGetters({ beenHere: 'auth/beenHere' }),
+  },
+  /**
+   * When vue is mounted we need to check login state
+   */
+  async mounted() {
+    console.log('This is simple.vue mounted')
+    try {
+      //check if user has loggedin and been here (e.g. in this browser before)
+      if (this.beenHere) {
+        //first check if we can access account details
+
+        const check = await this.getUser()
+        this.status = check
+      }
+    } catch (e) {
+      this.status = false
     }
   },
-}
+  methods: {
+    ...mapActions({ getUser: 'auth/getUser' }),
+  },
+  data() {
+    return {
+      title: 'SCG - Simple Cloud Generator',
+      status: null,
+    }
+  },
+})
 </script>
