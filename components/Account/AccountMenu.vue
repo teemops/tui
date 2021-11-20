@@ -54,7 +54,7 @@
               >
             </v-list-item>
             <v-divider></v-divider>
-            <v-list-item @click="logout()">
+            <v-list-item @click="logoutUser()">
               <v-list-item-title>Logout</v-list-item-title>
             </v-list-item>
           </v-list>
@@ -91,6 +91,10 @@ export default Vue.extend({
     ...mapActions({ logout: 'auth/logout' }),
     showMenu: function () {
       this.menuState = !this.menuState
+    },
+    logoutUser() {
+      this.logout()
+      this.$emit('logout')
     },
   },
   data() {

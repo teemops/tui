@@ -52,7 +52,7 @@ export default {
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
-    baseURL: process.env.API_ENDPOINT || 'https://api.teemops.com/api/'
+    baseURL: process.env.MODE=='dev' ? 'http://localhost:8080/api/' : 'https://api.teemops.com/api/'
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
@@ -85,4 +85,8 @@ export default {
 
   // Build Configuration: https://go.nuxtjs.dev/config-build
   build: {},
+  env: {
+    stripe_key: process.env.MODE != 'dev' ? 'pk_live_sYVbprnwI6PSd33Afh26IRnF005oTaG2o6' : 'pk_test_Sznukb5ZQUjOG1o6Xc61ChiJ00DOq2N6AL',
+    stripe_link: process.env.MODE != 'dev' ? 'https://buy.stripe.com/aEU14aa7qdNP0uI5kl' : 'https://buy.stripe.com/test_9AQbLh4QUcvfezu6op'
+  }
 }

@@ -32,7 +32,7 @@
             ></v-select>
           </div>
           <div v-else>
-            <v-btn color="primary" v-on:click="connectAWSAccount"
+            <v-btn color="primary" v-on:click="upgrade"
               >Connect AWS Account</v-btn
             >
           </div>
@@ -186,8 +186,6 @@
         <v-btn color="primary" v-on:click="show = 'start'"> Edit </v-btn>
       </v-card-actions>
     </v-card>
-
-    <connect-account v-if="show == 'connect'" v-on:cancelMe="show = 'start'" />
   </div>
 </template>
 
@@ -252,8 +250,8 @@ export default Vue.extend({
     ...mapActions({ topsGet: 'teemops/get' }),
     ...mapActions({ topsPost: 'teemops/post' }),
     ...mapActions({ topsCredentials: 'teemops/credentials' }),
-    connectAWSAccount: async function () {
-      this.show = showOptions.connect
+    upgrade: async function () {
+      this.$router.push('/signup')
     },
     dismissConnectLocal: async function () {
       this.dismissConnect = 1
@@ -395,36 +393,52 @@ export default Vue.extend({
       currentOptions.forEach(async (option: any, index) => {
         if (option['dynamic'] != undefined) {
           try {
-            console.log(this.cloud.region)
-            //e.g. tihs will equal name of return data from AWS APIs e.g. Subnets
-            const itemIdentifier = option['dynamic']['items']
-            //id is used to identify the fieldname that will become the id
-            const idIdentifier = option['dynamic']['id']
-            //name is used to identify whether or not to use Tags 'tags' or
-            //use the named field as the name
-            const nameIdentifier =
-              option['textPath'] == 'tags'
-                ? `Tags[?Key=='Name'].Value[] | [0]`
-                : option['textPath']
-            const filterParams =
-              option['dynamic']['params'] != undefined
-                ? option['dynamic']['params']
-                : {}
-            const params = {
-              ...option['dynamic'],
-              awsAccountId: this.cloud.accountid,
-              params: filterParams,
-              region: this.cloud.region,
-              filter: `${itemIdentifier}[*].{name: ${nameIdentifier}, id: ${idIdentifier}}`,
-            }
-            const response = await this.topsPost({
-              path: 'apps/general',
-              data: params,
-              token: this.token,
-            })
-            console.log(JSON.stringify(response))
-            if (response.data != undefined && response.data.length > 0) {
-              option['values'] = response.data
+            if (this.cloud.accountid != undefined) {
+              console.log(this.cloud.region)
+              //e.g. tihs will equal name of return data from AWS APIs e.g. Subnets
+              const itemIdentifier = option['dynamic']['items']
+              //id is used to identify the fieldname that will become the id
+              const idIdentifier = option['dynamic']['id']
+              //name is used to identify whether or not to use Tags 'tags' or
+              //use the named field as the name
+              const nameIdentifier =
+                option['textPath'] == 'tags'
+                  ? `Tags[?Key=='Name'].Value[] | [0]`
+                  : option['textPath']
+              const filterParams =
+                option['dynamic']['params'] != undefined
+                  ? option['dynamic']['params']
+                  : {}
+              const params = {
+                ...option['dynamic'],
+                awsAccountId: this.cloud.accountid,
+                params: filterParams,
+                region: this.cloud.region,
+                filter: `${itemIdentifier}[*].{name: ${nameIdentifier}, id: ${idIdentifier}}`,
+              }
+              const response = await this.topsPost({
+                path: 'apps/general',
+                data: params,
+                token: this.token,
+              })
+              console.log(JSON.stringify(response))
+              if (response.data != undefined && response.data.length > 0) {
+                option['values'] = response.data
+              } else {
+                option['values'] = [
+                  {
+                    id: `Create a new ${option.name} item and refresh`,
+                    name: `No data `,
+                  },
+                ]
+              }
+            } else {
+              option['values'] = [
+                {
+                  id: `To View Lists`,
+                  name: `Connect AWS account`,
+                },
+              ]
             }
           } catch (e) {
             console.log(e)

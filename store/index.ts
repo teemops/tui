@@ -52,5 +52,35 @@ export const actions: ActionTree<RootState, RootState> = {
 
     commit("CHANGE_NAME", "blah")
     
+  },
+  async checkStripeSession({state}, sessionId){
+    try {
+      const result=await this.$axios.$post(`users/cart`, {
+        checkout_id: sessionId
+      })
+      if (result) {
+        
+        return result
+      }else{
+        return false
+      }
+    } catch (e) {
+      throw e
+    }
+  },
+  async saveStripeSessionDetails({state}, sessionId){
+    try {
+      const result=await this.$axios.$post(`users/subs`, {
+        checkout_id: sessionId
+      })
+      if (result) {
+        
+        return true
+      }else{
+        return false
+      }
+    } catch (e) {
+      throw e
+    }
   }
 }

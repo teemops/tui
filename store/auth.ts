@@ -3,9 +3,7 @@ import User from '@/types/user'
 
 export const state = () => ({
   user: {} as User,
-  username: '' as string,
   token: {} as string | null,
-  email: '' as string,
   beenHere: false as Boolean
 })
 
@@ -18,10 +16,8 @@ export const getters: GetterTree<RootState, RootState> = {
 }
 
 export const mutations: MutationTree<RootState> = {
-  SET_USER_NAME: (state, username: string) => (state.username = username),
   SET_USER: (state, user: User) => (state.user = user),
   SET_TOKEN: (state, token: string) => (state.token = token),
-  SET_EMAIL: (state, email: string) => (state.email = email),
   SET_HAS_LOGGED_IN: (state) => (state.beenHere = true),
   SET_NO_LOGIN: (state) => (state.beenHere = false)
 }
@@ -127,7 +123,6 @@ export const actions: ActionTree<RootState, RootState> = {
         email: email
       })
       if (result) {
-        commit("SET_EMAIL", email)
         return true
       }else{
         return false
@@ -199,7 +194,12 @@ export const actions: ActionTree<RootState, RootState> = {
    */
   logout({state, commit}){
     commit("SET_TOKEN", null)
+    commit("SET_USER", null)
     this.$router.push('login')
+    
+
+    //window.location.href='/login'
+    
   },
   /**
    * This is triggered from the login form "cancel" link

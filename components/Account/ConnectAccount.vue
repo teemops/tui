@@ -37,7 +37,7 @@
               <v-text-field
                 v-if="showPass"
                 type="password"
-                label="Enter password"
+                label="Confirm password"
                 :rules="cpassValidation"
                 v-model="cpassword"
               ></v-text-field>
@@ -92,6 +92,9 @@
           <v-btn color="secondary" v-on:click="cancelFlow">Cancel </v-btn>
         </v-card-actions>
       </v-card>
+      <v-divider></v-divider>
+      <features v-if="!authenticated"></features>
+
       <v-card v-if="authenticated">
         <v-card-title class="headline">My Account </v-card-title>
         <v-card-text>
@@ -113,20 +116,25 @@
                 This opens a new browser window which will take you to your AWS
                 Account to complete the process.
               </p>
+              <p>
+                Once connected you can click the button below. If you have any
+                issues please refresh the page or email support@teemops.com
+              </p>
             </v-col>
           </v-row>
         </v-card-text>
         <v-card-actions>
-          <v-btn color="grey" v-on:click="logout">Logout</v-btn>
+          <a href="/"><v-btn color="primary">Start App</v-btn></a>
         </v-card-actions>
       </v-card>
     </v-form>
   </div>
 </template>
 <script lang="ts">
-import Vue from 'vue'
+import Vue, { PropOptions } from 'vue'
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
 import ConnectBanner from '~/components/Account/ConnectBanner.vue'
+import Features from '~/components/Info/Featues.vue'
 import Notify from '~/components/Notify.vue'
 
 const NO_SPACES_REGEX = /^([A-z])*[^\s]\1*$/
@@ -135,25 +143,52 @@ const NUMBER_REGEX = /^([0-9])*[^\s]\1*$/
 const CFN_TEMPLATE =
   'https://console.aws.amazon.com/cloudformation/home?#/stacks/quickcreate?templateUrl=https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Ftemplates.teemops.com%2Fiam.role.child.account.cfn.yaml&stackName=teemops-dontdelete&param_ParentAWSAccountId=231648734092'
 
+/**
+ * This Component manages the signup completion and connect account process.
+ * Steps are as follows:
+ * - Get Stripe checkout code
+ * - Add email
+ */
 export default Vue.extend({
+  props: {
+    subscriptionId: { type: String, required: false } as PropOptions<String>,
+  },
   components: {
     ConnectBanner,
     Notify,
+    Features,
   },
   async mounted() {
-    const userDetails = await this.getUser()
-
-    if (userDetails) {
-      this.authenticated = true
-      this.message = `Welcome back, you can view your account here.`
-      if (this.cfnData.uniqueId === undefined) {
-        const launchCodes = await this.generate()
-        this.cfnData = launchCodes
+    //check the stripe session if it exists
+    console.log('Connect Account mounted')
+    if (this.subscriptionId != undefined) {
+      //check if the subscription is processed
+      try {
+        /**
+         * Get the stripe checkout information, example looks like this
+         *
+         */
+        var checkout = await this.checkStripeSession(this.subscriptionId)
+        if (checkout.result.email != undefined) {
+          this.email = checkout.result.email
+        }
+      } catch (e) {
+        throw e
       }
-    } else {
-      console.log('Not logged in')
-      this.authenticated = false
     }
+    // const userDetails = await this.getUser()
+
+    // if (userDetails) {
+    //   this.authenticated = true
+    //   this.message = `Welcome back, you can view your account here.`
+    //   if (this.cfnData.uniqueId === undefined) {
+    //     const launchCodes = await this.generate()
+    //     this.cfnData = launchCodes
+    //   }
+    // } else {
+    //   console.log('Not logged in')
+    //   this.authenticated = false
+    // }
   },
   methods: {
     ...mapActions({ checkUser: 'auth/check' }),
@@ -163,6 +198,8 @@ export default Vue.extend({
     ...mapActions({ verifyUser: 'auth/verify' }),
     ...mapActions({ generate: 'auth/generate' }),
     ...mapActions({ getUser: 'auth/getUser' }),
+    ...mapActions({ checkStripeSession: 'checkStripeSession' }),
+    ...mapActions({ saveStripeSessionDetails: 'saveStripeSessionDetails' }),
     loginMe: async function () {
       this.waiting = true
       try {
@@ -250,13 +287,20 @@ export default Vue.extend({
               //now login
               await this.loginMe()
               this.message =
-                'You are now logged in and a new window has been launched to connect your AWS account.'
+                'You are now logged in and a new browser tab has been launched to connect your AWS account.'
               this.authenticated = true
               //connects to topsless and gets unique code and STS token to pass into cloudformation parameters
               const launchCodes = await this.generate()
               this.cfnData = launchCodes
               const cfnUrl = `${CFN_TEMPLATE}&param_ExternalId=${this.cfnData.externalId}&param_UniqueId=${this.cfnData.uniqueId}`
               window.open(cfnUrl, '_blank')
+              const saveStripeSession = await this.saveStripeSessionDetails(
+                this.subscriptionId
+              )
+              if (saveStripeSession) {
+                this.message =
+                  'Your trial has started and you will be charged in 14 days time.'
+              }
             } else {
               this.message = verifyResult
             }
@@ -311,6 +355,7 @@ export default Vue.extend({
       cpassword: '',
       verify: false,
       verifyCode: null,
+      stripeCheckoutData: null,
       emailValidation: [
         (v: any) => !!v || 'This field is required',
         (v: any) => EMAIL_REGEX.test(v) || 'Must be a valid email address',

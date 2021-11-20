@@ -1,12 +1,18 @@
 <template>
   <v-app dark>
     <v-app-bar fixed app>
-      <img src="~/assets/TeemLogo1ps-small.png" height="40px" />
+      <nuxt-link to="/"
+        ><img src="~/assets/TeemLogo1ps-small.png" height="40px"
+      /></nuxt-link>
 
       <v-spacer />
       <b>Teem Ops - Simple Cloud Generator</b>
       <v-spacer />
-      <account-menu :status="status"></account-menu>
+      <account-menu
+        :status="status"
+        v-on:logout="logoutAction"
+        v-on:login="loginAction"
+      ></account-menu>
     </v-app-bar>
     <v-main>
       <v-container>
@@ -36,11 +42,11 @@
 <script lang="ts">
 import Vue from 'vue'
 import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
-import AccountMenu  from '../components/Account/AccountMenu.vue';
+import AccountMenu from '../components/Account/AccountMenu.vue'
 
 export default Vue.extend({
-  components:{
-    AccountMenu
+  components: {
+    AccountMenu,
   },
   computed: {
     ...mapGetters({ token: 'auth/token' }),
@@ -50,14 +56,16 @@ export default Vue.extend({
    * When vue is mounted we need to check login state
    */
   async mounted() {
-    console.log("This is simple.vue mounted")
+    console.log('This is simple.vue mounted')
     try {
       //check if user has loggedin and been here (e.g. in this browser before)
       if (this.beenHere) {
         //first check if we can access account details
 
         const check = await this.getUser()
-        this.status=check
+        this.status = check
+      } else {
+        this.status = false
       }
     } catch (e) {
       this.status = false
@@ -65,6 +73,22 @@ export default Vue.extend({
   },
   methods: {
     ...mapActions({ getUser: 'auth/getUser' }),
+    async logoutAction() {
+      console.log('Event Logout emitted')
+      this.status = false
+      this.$forceUpdate()
+    },
+    async loginAction() {
+      console.log('Event Login emitted')
+      try {
+        //first check if we can access account details
+        const check = await this.getUser()
+        this.status = check
+      } catch (e) {
+        this.status = false
+      }
+      this.$forceUpdate()
+    },
   },
   data() {
     return {

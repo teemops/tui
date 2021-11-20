@@ -1,29 +1,31 @@
 <template>
-    <div>
-    <v-row justify="center" align="center">
-      <v-col cols="auto"> </v-col>
-    </v-row>
-    <v-row justify="center" align="center">
-      <v-col cols="auto">
-        <h1>testing</h1>
-        {{subscriptionId}}
-      </v-col>
-    </v-row>
+  <div>
+    <signup v-if="signupState == 'start'"></signup>
+    <connect-account
+      v-if="signupState == 'complete'"
+      :subscriptionId="subscriptionId"
+    />
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
+import { mapState, mapGetters, mapMutations, mapActions } from 'vuex'
+import Signup from '~/components/Account/Signup.vue'
+import ConnectAccount from '~/components/Account/ConnectAccount.vue'
+
 export default Vue.extend({
-    async mounted(){
-        //check if the subscription is processed
-        
-    },
-    data(){
-        var params=this.$route.params;
-        return {
-            subscriptionId: params.subid
-        }
+  components: {
+    Signup,
+    ConnectAccount,
+  },
+  async mounted() {},
+  data() {
+    var params = this.$route.params
+    return {
+      signupState: params.subid != undefined ? 'complete' : 'start',
+      subscriptionId: params.subid != undefined ? params.subid : null,
     }
+  },
 })
 </script>

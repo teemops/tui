@@ -1,12 +1,14 @@
 <template>
   <v-app dark>
     <v-app-bar fixed app>
-      <img src="~/assets/TeemLogo1ps-small.png" height="40px" />
+      <nuxt-link to="/"
+        ><img src="~/assets/TeemLogo1ps-small.png" height="40px"
+      /></nuxt-link>
 
       <v-spacer />
       <b>Teem Ops</b>
       <v-spacer />
-      <account-menu :status="status"></account-menu>
+      <account-menu :status="status" v-on:logout="logoutAction"></account-menu>
     </v-app-bar>
     <v-main>
       <v-container>
@@ -44,6 +46,7 @@ export default Vue.extend({
   },
   computed: {
     ...mapGetters({ token: 'auth/token' }),
+    ...mapGetters({ user: 'auth/user' }),
     ...mapGetters({ beenHere: 'auth/beenHere' }),
   },
   /**
@@ -55,21 +58,39 @@ export default Vue.extend({
       //check if user has loggedin and been here (e.g. in this browser before)
       if (this.beenHere) {
         //first check if we can access account details
-
         const check = await this.getUser()
         this.status = check
       }
     } catch (e) {
       this.status = false
+    } finally {
+      this.checkComplete = true
     }
   },
   methods: {
     ...mapActions({ getUser: 'auth/getUser' }),
+    async logoutAction() {
+      console.log('Event Logout emitted')
+      this.status = false
+      this.$forceUpdate()
+    },
+    async loginAction() {
+      console.log('Event Login emitted')
+      try {
+        //first check if we can access account details
+        const check = await this.getUser()
+        this.status = check
+      } catch (e) {
+        this.status = false
+      }
+      this.$forceUpdate()
+    },
   },
   data() {
     return {
       title: 'SCG - Simple Cloud Generator',
       status: null,
+      checkComplete: false,
     }
   },
 })
