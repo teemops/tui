@@ -17,13 +17,15 @@
       </v-list>
 
       <template v-slot:append>
-        <div class="pa-2">
+        <div class="pa-2 text-center">
           <v-btn block> Logout </v-btn>
+          <br />
+          <img src="~/assets/site-logo.png" height="40px" />
         </div>
       </template>
     </v-navigation-drawer>
     <v-app-bar fixed app>
-      <img src="~/assets/TeemLogo1ps-small.png" height="40px" />
+      <v-breadcrumbs> </v-breadcrumbs>
       <v-spacer /><a
         target="_blank"
         style="color: #fff; text-decoration: none"
@@ -51,15 +53,41 @@ export default Vue.extend({
   },
   data() {
     return {
-      title: 'SCG - Simple Cloud Generator',
+      title: 'Teemops Console',
       rightDrawer: true,
       right: true,
       navitems: [
         {
-          id: 'home',
+          id: 'dashboard',
           icon: 'mdi-home',
-          text: 'Launch',
+          text: 'Dashboard',
         },
+        {
+          id: 'apps',
+          icon: 'mdi-apps',
+          text: 'Apps',
+        },
+        {
+          id: 'databases',
+          icon: 'mdi-database-edit',
+          text: 'Databases',
+        },
+        {
+          id: 'security',
+          icon: 'mdi-server-security',
+          text: 'Security',
+        },
+        {
+          id: 'backups',
+          icon: 'mdi-backup-restore',
+          text: 'Backup & Restore',
+        },
+        {
+          id: 'monitoring',
+          icon: 'mdi-monitor-dashboard',
+          text: 'Monitoring',
+        },
+
         {
           id: 'accounts',
           icon: 'mdi-domain',

@@ -52,7 +52,7 @@ export default {
 
   // Axios module configuration: https://go.nuxtjs.dev/config-axios
   axios: {
-    baseURL: process.env.MODE=='dev' ? 'http://localhost:8080/api/' : 'https://api.teemops.com/api/'
+    baseURL: process.env.MODE == 'dev' ? 'http://localhost:8080/api/' : 'https://api.teemops.com/api/'
   },
 
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify

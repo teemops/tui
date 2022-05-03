@@ -37,9 +37,7 @@
           </v-chip>
           <v-list-item two-line>
             <v-list-item-avatar>
-              <img
-                src="https://media-exp1.licdn.com/dms/image/C5603AQGCLzWZq49T0w/profile-displayphoto-shrink_200_200/0/1617272065453?e=1641427200&v=beta&t=jsudnq-YSY62opOOAviNV_YBI2vtEinrxu9WRoDYY-4"
-              />
+              <img src="~/assets/images/emptyprofile.png" />
             </v-list-item-avatar>
 
             <v-list-item-content>
@@ -48,6 +46,11 @@
             </v-list-item-content>
           </v-list-item>
           <v-list>
+            <v-list-item>
+              <nuxt-link to="/dashboard"
+                ><v-list-item-title>Dashboard</v-list-item-title></nuxt-link
+              >
+            </v-list-item>
             <v-list-item @click="account()">
               <nuxt-link to="/user"
                 ><v-list-item-title>View Account</v-list-item-title></nuxt-link

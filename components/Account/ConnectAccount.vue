@@ -270,6 +270,7 @@ export default Vue.extend({
       this.message = ''
     },
     completeVerify: async function () {
+      console.log('Completeverify')
       if (this.verifyCode != null && this.verifyCode.length == 6) {
         if (
           this.password != null &&
